@@ -14,12 +14,14 @@ from helpers import get_group_rules, is_valid_text
 
 async def filter_words(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     text = update.message.text or update.message.caption
-
-    if is_valid_text(text):
+    isValid, reason = is_valid_text(text)
+    if isValid:
         return
 
     await update.effective_chat.send_message(
-        "נמחקה הודעה לא חוקית של המשתמש " + update.effective_user.full_name
+        "נמחקה הודעה לא חוקית של המשתמש "
+        + update.effective_user.full_name
+        + f"\nההודעה הכילה {reason}"
     )
     try:
         await update.message.delete()
@@ -38,7 +40,8 @@ async def verify_join_requests(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
     request = update.chat_join_request
-    if is_valid_text(request.from_user.full_name + (request.bio or "")):
+    isValid, reason = is_valid_text(request.from_user.full_name + (request.bio or ""))
+    if isValid:
         await request.approve()
         await update.effective_chat.send_message(
             get_group_rules(request.from_user.full_name)
@@ -46,7 +49,7 @@ async def verify_join_requests(
     else:
         await request.decline()
         await update.effective_chat.send_message(
-            f"המשתמש {update.effective_user.full_name} נחסם מכניסה לקבוצה"
+            f"המשתמש {update.effective_user.full_name} נחסם מכניסה לקבוצה\n{reason}"
         )
 
 

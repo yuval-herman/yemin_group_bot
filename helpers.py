@@ -41,15 +41,18 @@ def is_banned(word: str) -> bool:
 
 def is_valid_text(text):
     encountered = False
+    reason = ""
     for word in text.split():
         if is_banned(word):
             encountered = True
+            reason = "מילה לא חוקית"
             break
         for ch in word:
             if is_arabic(ch):
                 encountered = True
+                reason = "טקסט ערבי"
                 break
-    return not encountered
+    return (not encountered, reason)
 
 
 def get_group_rules(user_name: str):
