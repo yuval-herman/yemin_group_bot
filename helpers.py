@@ -50,3 +50,17 @@ def is_valid_text(text):
                 encountered = True
                 break
     return not encountered
+
+
+def get_group_rules(user_name: str):
+    return f"""
+🛑שלום {user_name}, נא לשים לב לחוקי הקבוצה!🛑
+מי שלא יציית יזרק במקום!
+
+כללים בקבוצה:
+* אין להשתמש בקללות ובשפה לא ראויה.
+* אין כניסה ל0מלאנים.
+* אין לשלוח הודעות קישורים לקבוצות שלא קשורות למחאת הימין🇮🇱.
+
+כל דברי הסתה או אלימות לא על דעת המנהלים בקבוצה ואסורים בהחלט
+"""

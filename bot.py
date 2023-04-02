@@ -9,7 +9,7 @@ from telegram.ext import (
 )
 
 from BotSecrets import get_secrets
-from helpers import is_valid_text
+from helpers import get_group_rules, is_valid_text
 
 
 async def filter_words(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -40,6 +40,9 @@ async def verify_join_requests(
     request = update.chat_join_request
     if is_valid_text(request.from_user.full_name + (request.bio or "")):
         await request.approve()
+        await update.effective_chat.send_message(
+            get_group_rules(request.from_user.full_name)
+        )
     else:
         await request.decline()
         await update.effective_chat.send_message(
