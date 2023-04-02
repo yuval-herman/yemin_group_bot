@@ -19,7 +19,10 @@ async def filter_words(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 break
 
     if encountered:
-        await update.message.reply_text("הודעה לא חוקית")
+        await update.effective_chat.send_message(
+            "נמחקה הודעה לא חוקית של המשתמש " + update.effective_user.full_name
+        )
+        await update.message.delete()
 
 
 secrets = get_secrets()
