@@ -37,3 +37,16 @@ banned_words = ["זונה", "שרמוטה", "זין"]
 
 def is_banned(word: str) -> bool:
     return (words_dict[word] or word) in banned_words
+
+
+def is_valid_text(text):
+    encountered = False
+    for word in text.split():
+        if is_banned(word):
+            encountered = True
+            break
+        for ch in word:
+            if is_arabic(ch):
+                encountered = True
+                break
+    return not encountered
