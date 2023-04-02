@@ -4,6 +4,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filters
 
 from BotSecrets import get_secrets
+from helpers import is_arabic
 
 
 async def filter_words(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -11,23 +12,15 @@ async def filter_words(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     arabic_script = [0, 0]
     encountered = False
     for i, ch in enumerate(text):
-        if (
-            "\u0600" <= ch <= "\u06FF"
-            or "\u0750" <= ch <= "\u077F"
-            or "\u08A0" <= ch <= "\u08FF"
-            or "\uFB50" <= ch <= "\uFDFF"
-            or "\uFE70" <= ch <= "\uFEFF"
-            or "\U00010E60" <= ch <= "\U00010E7F"
-            or "\U0001EE00" <= ch <= "\U0001EEFF"
-        ):
+        if is_arabic(ch):
             if not encountered:
                 arabic_script[0] = i
                 encountered = True
             else:
                 arabic_script[1] = i
 
-    if arabic_script:
-        await update.message.reply_text(arabic_script or text)
+    if encountered:
+        await update.message.reply_text("הודעה לא חוקית")
 
 
 secrets = get_secrets()
