@@ -32,7 +32,7 @@ def load_word_dict():
 
 words_dict = load_word_dict()
 
-banned_words = ["זונה"]
+banned_words = ["זונה", "שרמוטה", "זין"]
 
 
 def is_banned(word: str) -> bool:
