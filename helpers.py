@@ -4,7 +4,14 @@ from typing import Union
 from dataStructures import InvalidActions, InvalidTextInfo
 from dataStructures import BotActions, InvalidTextInfo
 
-from db import create_user, delete_user, get_user, update_warnings
+from db import (
+    add_censor_string,
+    create_user,
+    delete_user,
+    get_user,
+    read_censor_strings,
+    update_warnings,
+)
 
 
 def is_arabic(ch):
@@ -38,7 +45,10 @@ def load_word_dict():
 
 words_dict = load_word_dict()
 
-banned_words = ["זונה", "שרמוטה", "זין", "קקי"]
+for string in ("זונה", "שרמוטה", "זין", "קקי"):
+    add_censor_string(string)
+
+banned_words = read_censor_strings()
 
 
 def is_banned(word: str) -> bool:

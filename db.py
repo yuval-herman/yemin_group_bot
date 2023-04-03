@@ -1,6 +1,6 @@
 import sqlite3
 from time import time
-from typing import Union
+from typing import List, Union
 
 # Create a connection to the database
 with sqlite3.connect("yemin_bot.db") as conn:
@@ -16,10 +16,32 @@ with sqlite3.connect("yemin_bot.db") as conn:
             user_id INTEGER NOT NULL,
             warnings INTEGER DEFAULT 1,
             last_warning_date INTEGER NOT NULL
-        )
-    """
+        )"""
+    )
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS censored_strings (
+        id INTEGER PRIMARY KEY,
+        string TEXT UNIQUE NOT NULL
+        );"""
     )
     conn.commit()
+
+    # Insert a new censor_string into the table
+    def add_censor_string(str: str):
+        try:
+            c.execute(
+                "INSERT INTO censored_strings (string) VALUES (?)",
+                (str,),
+            )
+            conn.commit()
+        except sqlite3.IntegrityError:
+            pass
+
+    # Insert a new censor_string into the table
+    def read_censor_strings() -> List[str]:
+        c.execute("SELECT * FROM censored_strings")
+        return c.fetchall()
 
     # Insert a new user into the table
     def create_user(user_id):
