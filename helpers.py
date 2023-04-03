@@ -1,6 +1,7 @@
+from datetime import datetime, timedelta
 from collections import defaultdict
 
-from db import create_user, delete_user, get_user_warnings, update_warnings
+from db import create_user, delete_user, get_user, update_warnings
 
 
 def is_arabic(ch):
@@ -74,11 +75,18 @@ def get_group_rules(user_name: str):
 def increment_user_warnings_or_delete(user_id: int):
     """increment user warnings or delete him if he is passed the limit"""
 
-    warnings = get_user_warnings(user_id)
-    if warnings is None:
+    user = get_user(user_id)
+    # if there is no user, create one
+    if user is None:
         create_user(user_id)
         return False, 1
-    warnings = (warnings or 0) + 1
+
+    last_warning_date = datetime.fromtimestamp(user["last_warning_date"])
+    # if the last warning was more then half a year ago, ignore it
+    if last_warning_date < datetime.now() - timedelta(seconds=5):
+        warnings = 1
+    else:
+        warnings = user["warnings"] + 1
     if warnings > 2:
         delete_user(user_id)
         return True, warnings

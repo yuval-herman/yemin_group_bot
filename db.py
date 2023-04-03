@@ -1,7 +1,9 @@
 import sqlite3
+from time import time
 
 # Create a connection to the database
 with sqlite3.connect("yemin_bot.db") as conn:
+    conn.row_factory = sqlite3.Row
     # Create a cursor to execute SQL queries
     c = conn.cursor()
 
@@ -12,7 +14,7 @@ with sqlite3.connect("yemin_bot.db") as conn:
             id INTEGER PRIMARY KEY,
             user_id INTEGER NOT NULL,
             warnings INTEGER DEFAULT 1,
-            last_warning_date TEXT
+            last_warning_date INTEGER NOT NULL
         )
     """
     )
@@ -20,7 +22,10 @@ with sqlite3.connect("yemin_bot.db") as conn:
 
     # Insert a new user into the table
     def create_user(user_id):
-        c.execute("INSERT INTO users (user_id) VALUES (?)", (user_id,))
+        c.execute(
+            "INSERT INTO users (user_id, last_warning_date) VALUES (?, ?)",
+            (user_id, int(time())),
+        )
         conn.commit()
 
     # Get a list of all users in the table
@@ -29,18 +34,15 @@ with sqlite3.connect("yemin_bot.db") as conn:
         return c.fetchall()
 
     # Check if a user exists and return the number of warnings they have
-    def get_user_warnings(user_id) -> int | None:
-        c.execute("SELECT warnings FROM users WHERE user_id = ?", (user_id,))
-        result = c.fetchone()
-        if result is None:
-            return None  # User not found
-        else:
-            return result[0]
+    def get_user(user_id) -> sqlite3.Row:
+        c.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
+        return c.fetchone()
 
     # Update a user's warning count
     def update_warnings(user_id: int, warnings: int):
         c.execute(
-            "UPDATE users SET warnings = ? WHERE user_id = ?", (warnings, user_id)
+            "UPDATE users SET warnings = ?, last_warning_date = ? WHERE user_id = ?",
+            (warnings, int(time()), user_id),
         )
         conn.commit()
 
