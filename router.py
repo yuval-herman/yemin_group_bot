@@ -49,3 +49,13 @@ async def verify_join_requests(
         await update.effective_chat.send_message(
             f"המשתמש {update.effective_user.full_name} נחסם מכניסה לקבוצה\n{info['msg']}"
         )
+
+
+async def send_group_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.effective_chat is None or update.effective_user is None:
+        return
+    await update.effective_chat.send_message(
+        f"""שלום {update.effective_user.full_name},
+הבוט הזה הוא בוט לניהול קבוצת הימין בטלגרם, ניתן להצטרף לקבוצה בקישור: https://t.me/+SHMn122vwFdlM2Jk
+מעבר לשליחת הודעה זאת אין לבוט כל יכולת לדבר בצ'אט פרטי."""
+    )
