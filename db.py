@@ -39,7 +39,7 @@ with sqlite3.connect("yemin_bot.db") as conn:
             pass
 
     # Insert a new censor_string into the table
-    def read_censor_strings() -> List[str]:
+    def read_censor_strings() -> List[sqlite3.Row]:
         c.execute("SELECT * FROM censored_strings")
         return c.fetchall()
 

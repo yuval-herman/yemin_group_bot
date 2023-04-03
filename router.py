@@ -1,10 +1,14 @@
-from botFunctions import ban_user, delete_message
-from dataStructures import BotActions, InvalidActions
-from helpers import get_group_rules, increment_user_warnings_or_delete, is_valid_text
-
-
 from telegram import ChatJoinRequest, Update
 from telegram.ext import ContextTypes
+
+from botFunctions import ban_user, delete_message
+from dataStructures import BotActions, InvalidActions
+from helpers import (
+    add_runtime_censor_word,
+    get_group_rules,
+    increment_user_warnings_or_delete,
+    is_valid_text,
+)
 
 
 async def filter_words(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -59,3 +63,28 @@ async def send_group_link(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 הבוט הזה הוא בוט לניהול קבוצת הימין בטלגרם, ניתן להצטרף לקבוצה בקישור: https://t.me/+SHMn122vwFdlM2Jk
 מעבר לשליחת הודעה זאת אין לבוט כל יכולת לדבר בצ'אט פרטי."""
     )
+
+
+async def censor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if (
+        update.effective_chat is None
+        or update.effective_user is None
+        or update.message is None
+    ):
+        return
+    if context.args is None or len(context.args) == 0:
+        await update.message.reply_text(
+            "שלח לי את הפקודה ואחריה את המילה שתרצה לחסום, לדוגמא\n/censor@yemin_group_bot חלול"
+        )
+    elif len(context.args) > 1:
+        await update.message.reply_text(
+            "אני יכול לחסום רק מילים יחידות, אם תרצה לחסום משפט, מצא את המילה הפוגענית ורשום לי רק אותה, לדוגמא\n"
+            + "/censor@yemin_group_bot אני שונא אותך! -> /censor@yemin_group_bot שונא"
+        )
+    else:
+        await update.effective_chat.send_message("המילה ששלחת תחסם")
+        add_runtime_censor_word(context.args[0])
+    try:
+        await update.message.delete()
+    except:
+        pass
