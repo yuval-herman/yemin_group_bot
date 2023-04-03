@@ -1,5 +1,8 @@
 from datetime import datetime, timedelta
 from collections import defaultdict
+from typing import Union
+from dataStructures import InvalidTextInfo
+from dataStructures import BotActions, InvalidTextInfo
 
 from db import create_user, delete_user, get_user, update_warnings
 
@@ -17,7 +20,7 @@ def is_arabic(ch):
 
 
 def load_word_dict():
-    wordsDict = defaultdict(lambda: None)
+    wordsDict = defaultdict[str, Union[str, None]](lambda: None)
     baseWord = ""
     nextIsBaseWord = True
     with open("data/nouns.txt", "r") as f:
@@ -35,27 +38,37 @@ def load_word_dict():
 
 words_dict = load_word_dict()
 
-banned_words = ["זונה", "שרמוטה", "זין"]
+banned_words = ["זונה", "שרמוטה", "זין", "קקי"]
 
 
 def is_banned(word: str) -> bool:
     return (words_dict[word] or word) in banned_words
 
 
-def is_valid_text(text):
-    encountered = False
-    reason = ""
+def is_valid_text(text: str) -> InvalidTextInfo:
     for word in text.split():
         if is_banned(word):
-            encountered = True
-            reason = "מילה לא חוקית"
-            break
+            return {
+                "is_invalid": True,
+                "msg": "מילה לא חוקית",
+                "action": BotActions.warn,
+                "warnings_amount": 0,
+            }
         for ch in word:
             if is_arabic(ch):
-                encountered = True
-                reason = "טקסט ערבי"
-                break
-    return (not encountered, reason)
+                return {
+                    "is_invalid": True,
+                    "msg": "טקסט ערבי",
+                    "action": BotActions.ban,
+                    "warnings_amount": 0,
+                }
+
+    return {
+        "is_invalid": False,
+        "action": BotActions.none,
+        "msg": "",
+        "warnings_amount": 0,
+    }
 
 
 def get_group_rules(user_name: str):
@@ -72,24 +85,28 @@ def get_group_rules(user_name: str):
 """
 
 
-def increment_user_warnings_or_delete(user_id: int):
+def increment_user_warnings_or_delete(
+    user_id: int, invalidTextInfo: InvalidTextInfo
+) -> InvalidTextInfo:
     """increment user warnings or delete him if he is passed the limit"""
 
     user = get_user(user_id)
     # if there is no user, create one
     if user is None:
         create_user(user_id)
-        return False, 1
+        invalidTextInfo["warnings_amount"] = 1
+        return invalidTextInfo
 
     last_warning_date = datetime.fromtimestamp(user["last_warning_date"])
     # if the last warning was more then half a year ago, ignore it
-    if last_warning_date < datetime.now() - timedelta(seconds=5):
-        warnings = 1
+    if last_warning_date < datetime.now() - timedelta(days=182):
+        invalidTextInfo["warnings_amount"] = 1
     else:
-        warnings = user["warnings"] + 1
+        invalidTextInfo["warnings_amount"] = user["warnings"] + 1
 
-    if warnings > 2:
+    if invalidTextInfo["warnings_amount"] > 2:
         delete_user(user_id)
-        return True, warnings
-    update_warnings(user_id, warnings)
-    return False, warnings
+        invalidTextInfo["action"] = BotActions.ban
+        return invalidTextInfo
+    update_warnings(user_id, invalidTextInfo["warnings_amount"])
+    return invalidTextInfo

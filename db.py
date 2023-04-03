@@ -1,5 +1,6 @@
 import sqlite3
 from time import time
+from typing import Union
 
 # Create a connection to the database
 with sqlite3.connect("yemin_bot.db") as conn:
@@ -34,7 +35,7 @@ with sqlite3.connect("yemin_bot.db") as conn:
         return c.fetchall()
 
     # Check if a user exists and return the number of warnings they have
-    def get_user(user_id) -> sqlite3.Row:
+    def get_user(user_id) -> Union[sqlite3.Row, None]:
         c.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
         return c.fetchone()
 
