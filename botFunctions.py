@@ -1,7 +1,8 @@
 from telegram.error import TelegramError
+from telegram import Update
 
 
-async def delete_message(update, reason):
+async def delete_message(update: Update, reason: str):
     try:
         await update.message.delete()
         await update.effective_chat.send_message(
@@ -13,7 +14,7 @@ async def delete_message(update, reason):
         await update.effective_chat.send_message("כשל במחיקת הודעה: " + e.message)
 
 
-async def ban_user(update):
+async def ban_user(update: Update):
     try:
         if update.effective_user.id != 227093322:
             await update.effective_chat.ban_member(update.effective_user.id)

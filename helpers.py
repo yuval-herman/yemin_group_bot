@@ -87,6 +87,7 @@ def increment_user_warnings_or_delete(user_id: int):
         warnings = 1
     else:
         warnings = user["warnings"] + 1
+
     if warnings > 2:
         delete_user(user_id)
         return True, warnings
