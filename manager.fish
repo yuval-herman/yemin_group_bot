@@ -30,6 +30,11 @@ function restart
     echo "Service restarted!"
 end
 
+function watch
+    echo "Watching code..."
+    ls *.py | entr -rc python bot.py
+end
+
 switch $argv[1]
     case upload
         upload
@@ -39,6 +44,8 @@ switch $argv[1]
         stop
     case restart
         restart
+    case watch
+        watch
     case "*"
         echo "Usage: python_project_remote.sh [upload|start|stop|restart]"
 end
