@@ -1,5 +1,7 @@
 from collections import defaultdict
 
+from db import create_user, delete_user, get_user_warnings, update_warnings
+
 
 def is_arabic(ch):
     return (
@@ -67,3 +69,18 @@ def get_group_rules(user_name: str):
 
 כל דברי הסתה או אלימות לא על דעת המנהלים בקבוצה ואסורים בהחלט
 """
+
+
+def increment_user_warnings_or_delete(user_id: int):
+    """increment user warnings or delete him if he is passed the limit"""
+
+    warnings = get_user_warnings(user_id)
+    if warnings is None:
+        create_user(user_id)
+        return False, 1
+    warnings = (warnings or 0) + 1
+    if warnings > 2:
+        delete_user(user_id)
+        return True, warnings
+    update_warnings(user_id, warnings)
+    return False, warnings

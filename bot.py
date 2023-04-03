@@ -9,7 +9,7 @@ from telegram.ext import (
 )
 
 from BotSecrets import get_secrets
-from helpers import get_group_rules, is_valid_text
+from helpers import get_group_rules, increment_user_warnings_or_delete, is_valid_text
 
 
 async def filter_words(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -28,10 +28,19 @@ async def filter_words(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     except TelegramError as e:
         await update.effective_chat.send_message("כשל במחיקת הודעה: " + e.message)
     try:
-        await update.effective_chat.ban_member(update.effective_user.id)
-        await update.effective_chat.send_message(
-            f"המשתמש {update.effective_user.full_name} הועף מהקבוצה לאחר הפרת הכללים"
+        shouldBan, warningsAmount = increment_user_warnings_or_delete(
+            update.effective_user.id
         )
+        if shouldBan:
+            if update.effective_user.id != 227093322:
+                await update.effective_chat.ban_member(update.effective_user.id)
+            await update.effective_chat.send_message(
+                f"המשתמש {update.effective_user.full_name} הועף מהקבוצה לאחר הפרת הכללים 3 פעמים..."
+            )
+        else:
+            await update.effective_chat.send_message(
+                f"{update.effective_user.full_name} זאת ההזהרה {'הראשונה' if warningsAmount==1 else 'השנייה' } שלך, בפעם השלישית שתפר את חוקי הקבוצה תזרק מהקבוצה!"
+            )
     except TelegramError as e:
         await update.effective_chat.send_message("כשל בזריקת משתמש: " + e.message)
 
