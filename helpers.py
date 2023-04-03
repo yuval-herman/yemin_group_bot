@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from collections import defaultdict
 from typing import Union
-from dataStructures import InvalidTextInfo
+from dataStructures import InvalidActions, InvalidTextInfo
 from dataStructures import BotActions, InvalidTextInfo
 
 from db import create_user, delete_user, get_user, update_warnings
@@ -53,6 +53,7 @@ def is_valid_text(text: str) -> InvalidTextInfo:
                 "msg": "מילה לא חוקית",
                 "action": BotActions.warn,
                 "warnings_amount": 0,
+                "invalid_action": InvalidActions.swear,
             }
         for ch in word:
             if is_arabic(ch):
@@ -61,6 +62,7 @@ def is_valid_text(text: str) -> InvalidTextInfo:
                     "msg": "טקסט ערבי",
                     "action": BotActions.ban,
                     "warnings_amount": 0,
+                    "invalid_action": InvalidActions.arabic,
                 }
 
     return {
@@ -68,6 +70,7 @@ def is_valid_text(text: str) -> InvalidTextInfo:
         "action": BotActions.none,
         "msg": "",
         "warnings_amount": 0,
+        "invalid_action": InvalidActions.none,
     }
 
 
