@@ -1,5 +1,11 @@
 import json
-from telegram import ChatJoinRequest, Update, ReplyKeyboardRemove, ReplyKeyboardMarkup
+from telegram import (
+    ChatJoinRequest,
+    ChatMember,
+    Update,
+    ReplyKeyboardRemove,
+    ReplyKeyboardMarkup,
+)
 from telegram.ext import ContextTypes
 
 from botFunctions import ban_user, delete_message, is_admin, is_private_chat
@@ -25,6 +31,16 @@ async def filter_words(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         or update.effective_chat is None
     ):
         return
+    for entity in update.message.entities:
+        if entity.type in [entity.TEXT_LINK, entity.URL] and (
+            await update.effective_chat.get_member(update.effective_user.id)
+        ).status not in [ChatMember.ADMINISTRATOR, ChatMember.OWNER]:
+            await update.message.delete()
+            await update.effective_chat.send_message(
+                f"{update.effective_user.full_name} שים לב כי אסור לשלוח לינקים בקבוצה."
+                + " אם ברצונך לפרסם לינק ששאר חברי הקבוצה צריכים לראות פנה למנהלי הקבוצה והם יפרסמו את הלינק בשמך"
+            )
+            break
     text = update.message.text or update.message.caption or ""
 
     info = is_valid_text(text)

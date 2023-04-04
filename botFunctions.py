@@ -53,7 +53,7 @@ async def is_admin(update: Update):
     chatMember = await update.effective_chat.get_member(update.effective_user.id)
     if (
         chatMember.status not in [chatMember.ADMINISTRATOR, chatMember.OWNER]
-        and update.effective_user.id != 227093322
+        and update.effective_user.id != 227093322  # my own id for debugging
     ):
         await update.message.reply_text(
             "פקודה זאת מיועדת למנהלים בלבד, צור קשר עם מנהלי הקבוצה על מנת לתקשר עם הבוט."
