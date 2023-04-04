@@ -1,6 +1,6 @@
 from typing import Dict
 from telegram.error import TelegramError
-from telegram import Update
+from telegram import Chat, Update
 
 from dataStructures import InvalidActions
 
@@ -43,29 +43,17 @@ async def ban_user(update: Update, reason: InvalidActions):
         await update.effective_chat.send_message("כשל בזריקת משתמש: " + e.message)
 
 
-async def is_admin(update: Update):
-    if (
-        update.effective_chat is None
-        or update.message is None
-        or update.effective_user is None
-    ):
-        return False
-    chatMember = await update.effective_chat.get_member(update.effective_user.id)
+async def is_admin(chat: Chat, user_id: int):
+    chatMember = await chat.get_member(user_id)
     if (
         chatMember.status not in [chatMember.ADMINISTRATOR, chatMember.OWNER]
-        and update.effective_user.id != 227093322  # my own id for debugging
+        and user_id != 227093322  # my own id for debugging
     ):
-        await update.message.reply_text(
-            "פקודה זאת מיועדת למנהלים בלבד, צור קשר עם מנהלי הקבוצה על מנת לתקשר עם הבוט."
-        )
         return False
     return True
 
 
-async def is_private_chat(update: Update):
-    if update.effective_chat is None or update.message is None:
-        return False
-    if not update.effective_chat.type == update.effective_chat.PRIVATE:
-        await update.message.reply_text("פקודה זה פועלת בצ'אט פרטי בלבד")
+async def is_private_chat(chat: Chat):
+    if not chat.type == chat.PRIVATE:
         return False
     return True

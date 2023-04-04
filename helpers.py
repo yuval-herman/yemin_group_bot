@@ -159,3 +159,11 @@ def increment_user_warnings_or_delete(
         return invalidTextInfo
     update_warnings(user_id, invalidTextInfo["warnings_amount"])
     return invalidTextInfo
+
+
+def get_only_admin_message():
+    return "פקודה זה מיועדת למנהלים בלבד"
+
+
+def get_private_chat_only():
+    return "פקודה זה פועלת בצ'אט פרטי בלבד"
