@@ -2,7 +2,7 @@ import json
 from telegram import ChatJoinRequest, Update
 from telegram.ext import ContextTypes
 
-from botFunctions import ban_user, delete_message, is_admin
+from botFunctions import ban_user, delete_message, is_admin, is_private_chat
 from dataStructures import BotActions, ReferralSource
 from db import add_poll_answer, aggregate_poll_answers
 from helpers import (
@@ -131,10 +131,10 @@ async def uncensor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 async def poll_stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None:
         return
-    if not await is_admin(update):
+    if not await is_private_chat(update):
         return
-    pollAnswers = aggregate_poll_answers()
 
+    pollAnswers = aggregate_poll_answers()
     totalAnswersCount = sum([c["count"] for c in pollAnswers])
     await update.message.reply_text(
         f"עד כה {totalAnswersCount} אנשים הגיבו לשאלון\n"
@@ -152,8 +152,7 @@ async def get_censored_words(
 ) -> None:
     if update.effective_chat is None or update.message is None:
         return
-    if not update.effective_chat.type == update.effective_chat.PRIVATE:
-        await update.message.reply_text("פקודה זה פועלת בצ'אט פרטי בלבד")
+    if not await is_private_chat(update):
         return
 
     await update.message.reply_text(

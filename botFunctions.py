@@ -60,3 +60,12 @@ async def is_admin(update: Update):
         )
         return False
     return True
+
+
+async def is_private_chat(update: Update):
+    if update.effective_chat is None or update.message is None:
+        return False
+    if not update.effective_chat.type == update.effective_chat.PRIVATE:
+        await update.message.reply_text("פקודה זה פועלת בצ'אט פרטי בלבד")
+        return False
+    return True
