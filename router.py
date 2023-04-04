@@ -1,5 +1,5 @@
 import json
-from telegram import ChatJoinRequest, Update
+from telegram import ChatJoinRequest, Update, ReplyKeyboardRemove, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 
 from botFunctions import ban_user, delete_message, is_admin, is_private_chat
@@ -111,8 +111,12 @@ async def uncensor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     if not await is_admin(update):
         return
     if context.args is None or len(context.args) == 0:
+        keyboard = [
+            [f"/uncensor@yemin_group_bot {word}"] for word in get_runtime_banned_words()
+        ]
         await update.message.reply_text(
-            "שלח לי את הפקודה ואחריה את המילה שתרצה להוריד ממאגר החסימות, לדוגמא\n/uncensor@yemin_group_bot חלול"
+            "שלח לי את הפקודה ואחריה את המילה שתרצה להוריד ממאגר החסימות, לדוגמא\n/uncensor@yemin_group_bot חלול",
+            reply_markup=ReplyKeyboardMarkup(keyboard),
         )
     elif len(context.args) > 1:
         await update.message.reply_text(
@@ -124,7 +128,9 @@ async def uncensor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             + f"/censor@yemin_group_bot {context.args[0]}"
         )
     else:
-        await update.message.reply_text("המילה ששלחת תורד ממאגר החסימות")
+        await update.message.reply_text(
+            "המילה ששלחת תורד ממאגר החסימות", reply_markup=ReplyKeyboardRemove()
+        )
         remove_runtime_censor_word(context.args[0])
 
 
