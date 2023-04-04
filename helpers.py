@@ -49,10 +49,14 @@ def load_word_dict():
 
 words_dict = load_word_dict()
 
-for string in ("זונה", "שרמוטה", "זין", "קקי"):
+for string in ("זונה", "שרמוטה", "זין"):
     add_censor_string(string)
 
 banned_words = {x[1] for x in read_censor_strings()}
+
+
+def get_runtime_banned_words():
+    return banned_words
 
 
 def add_runtime_censor_word(word: str):

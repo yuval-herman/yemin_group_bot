@@ -9,6 +9,7 @@ from helpers import (
     add_runtime_censor_word,
     get_group_rules,
     get_join_poll,
+    get_runtime_banned_words,
     increment_user_warnings_or_delete,
     is_banned,
     is_valid_text,
@@ -143,6 +144,20 @@ async def poll_stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
                 for answer in pollAnswers
             ]
         )
+    )
+
+
+async def get_censored_words(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    if update.effective_chat is None or update.message is None:
+        return
+    if not update.effective_chat.type == update.effective_chat.PRIVATE:
+        await update.message.reply_text("פקודה זה פועלת בצ'אט פרטי בלבד")
+        return
+
+    await update.message.reply_text(
+        "אלו המילים החסומות כרגע:\n" + "\n".join(get_runtime_banned_words())
     )
 
 
