@@ -56,3 +56,4 @@ async def is_admin(update: Update):
             "פקודה זאת מיועדת למנהלים בלבד, אם נתקלת במילה שלדעתך צריך לחסום, צור קשר עם מנהלי הקבוצה והם יחסמו אותה."
         )
         return False
+    return True

@@ -7,7 +7,9 @@ from helpers import (
     add_runtime_censor_word,
     get_group_rules,
     increment_user_warnings_or_delete,
+    is_banned,
     is_valid_text,
+    remove_runtime_censor_word,
 )
 
 
@@ -91,3 +93,30 @@ async def censor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         await update.message.delete()
     except:
         pass
+
+
+async def uncensor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if (
+        update.effective_chat is None
+        or update.effective_user is None
+        or update.message is None
+    ):
+        return
+    if not await is_admin(update):
+        return
+    if context.args is None or len(context.args) == 0:
+        await update.message.reply_text(
+            "שלח לי את הפקודה ואחריה את המילה שתרצה להוריד ממאגר החסימות, לדוגמא\n/uncensor@yemin_group_bot חלול"
+        )
+    elif len(context.args) > 1:
+        await update.message.reply_text(
+            "אני יכול לחסום רק מילים יחידות, כך שלא יכול להיות שיש משפט חסום במאגר"
+        )
+    elif not is_banned(context.args[0]):
+        await update.message.reply_text(
+            "המילה ששלחת לא חסומה כרגע, כדי לחסום אותה, נסה את הפקודה הזאת:\n"
+            + f"/censor@yemin_group_bot {context.args[0]}"
+        )
+    else:
+        await update.message.reply_text("המילה ששלחת תורד ממאגר החסימות")
+        remove_runtime_censor_word(context.args[0])

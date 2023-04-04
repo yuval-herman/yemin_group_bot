@@ -10,6 +10,7 @@ from db import (
     delete_user,
     get_user,
     read_censor_strings,
+    remove_censor_string,
     update_warnings,
 )
 
@@ -54,6 +55,12 @@ banned_words = {x[1] for x in read_censor_strings()}
 def add_runtime_censor_word(word: str):
     add_censor_string(word)
     banned_words.add(word)
+
+
+def remove_runtime_censor_word(word: str):
+    remove_censor_string(word)
+    if word in banned_words:
+        banned_words.remove(word)
 
 
 def is_banned(word: str) -> bool:

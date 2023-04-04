@@ -38,6 +38,17 @@ with sqlite3.connect("yemin_bot.db") as conn:
         except sqlite3.IntegrityError:
             pass
 
+    # Remove a censor_string from the table
+    def remove_censor_string(str: str):
+        try:
+            c.execute(
+                "DELETE FROM censored_strings WHERE string = ?",
+                (str,),
+            )
+            conn.commit()
+        except sqlite3.IntegrityError:
+            pass
+
     # Insert a new censor_string into the table
     def read_censor_strings() -> List[sqlite3.Row]:
         c.execute("SELECT * FROM censored_strings")
