@@ -35,17 +35,18 @@ function watch
     ls *.py | entr -rc python bot.py
 end
 
-switch $argv[1]
-    case upload
-        upload
-    case start
-        start
-    case stop
-        stop
-    case restart
-        restart
-    case watch
-        watch
-    case "*"
-        echo "Usage: python_project_remote.sh [upload|start|stop|restart]"
+function fetch
+    echo "Fetching db from server..."
+    scp -r $REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/yemin_bot.db remote.db
+    echo "Download complete!"
+end
+
+set available_commands upload start stop restart watch fetch
+
+if contains $argv[1] $available_commands
+    # If the command is in the array of available commands, run the corresponding function
+    $argv[1]
+else
+    set usage_message (string join "|" $available_commands)
+    echo "Usage: manager.sh [$usage_message]"
 end
