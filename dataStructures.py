@@ -1,4 +1,4 @@
-from enum import Enum, auto
+from enum import Enum, auto, unique
 from typing import TypedDict
 
 
@@ -20,3 +20,14 @@ class InvalidTextInfo(TypedDict):
     invalid_action: InvalidActions
     action: BotActions
     warnings_amount: int
+
+
+@unique
+class ReferralSource(Enum):
+    social_media = "רשתות חברתיות"
+    word_of_mouth = "מפה לאוזן"
+    online_search = "חיפוש באינטרנט"
+    telegram_search = "חיפוש בטלגרם"
+    other_group = "קבוצה אחרת"
+    advertisement = "פרסום"
+    other = "אחר"

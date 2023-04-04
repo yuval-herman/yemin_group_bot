@@ -1,18 +1,20 @@
 from telegram.ext import (
     ApplicationBuilder,
+    CallbackQueryHandler,
     ChatJoinRequestHandler,
-    MessageHandler,
     CommandHandler,
+    MessageHandler,
     filters,
 )
 
 from BotSecrets import get_secrets
 from router import (
-    uncensor_word,
-    filter_words,
-    send_group_link,
-    verify_join_requests,
+    button,
     censor_word,
+    filter_words,
+    great_new_members,
+    send_group_link,
+    uncensor_word,
 )
 
 secrets = get_secrets()
@@ -27,7 +29,8 @@ app.add_handler(
         (filters.TEXT | filters.CAPTION) & filters.ChatType.GROUPS, filter_words
     )
 )
-app.add_handler(ChatJoinRequestHandler(verify_join_requests))
+app.add_handler(ChatJoinRequestHandler(great_new_members))
+app.add_handler(CallbackQueryHandler(button))
 
 
 print("bot running!")

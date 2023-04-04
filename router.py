@@ -2,10 +2,12 @@ from telegram import ChatJoinRequest, Update
 from telegram.ext import ContextTypes
 
 from botFunctions import ban_user, delete_message, is_admin
-from dataStructures import BotActions, InvalidActions
+from dataStructures import BotActions, ReferralSource
+from db import add_poll_answer
 from helpers import (
     add_runtime_censor_word,
     get_group_rules,
+    get_join_poll,
     increment_user_warnings_or_delete,
     is_banned,
     is_valid_text,
@@ -38,9 +40,7 @@ async def filter_words(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         )
 
 
-async def verify_join_requests(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> None:
+async def great_new_members(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.effective_user is None or update.effective_chat is None:
         return
     request: ChatJoinRequest = update.chat_join_request  # type: ignore
@@ -50,6 +50,8 @@ async def verify_join_requests(
         await update.effective_chat.send_message(
             get_group_rules(request.from_user.full_name)
         )
+        pollText, replyMarkup = get_join_poll(request.from_user.full_name)
+        await update.effective_chat.send_message(pollText, reply_markup=replyMarkup)
     else:
         await request.decline()
         await update.effective_chat.send_message(
@@ -120,3 +122,17 @@ async def uncensor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     else:
         await update.message.reply_text("המילה ששלחת תורד ממאגר החסימות")
         remove_runtime_censor_word(context.args[0])
+
+
+async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Parses the CallbackQuery and updates the message text."""
+
+    query = update.callback_query
+    if query is None:
+        return
+
+    await query.answer("תודה על ההיענות!")
+    if query.data is None or query.data not in (x.value for x in ReferralSource):
+        return
+    add_poll_answer(query.data)
+    await query.delete_message()

@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
 from collections import defaultdict
 from typing import Union
-from dataStructures import InvalidActions, InvalidTextInfo
+
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from dataStructures import InvalidActions, InvalidTextInfo, ReferralSource
 from dataStructures import BotActions, InvalidTextInfo
 
 from db import (
@@ -108,6 +110,20 @@ def get_group_rules(user_name: str):
 
 כל דברי הסתה או אלימות לא על דעת המנהלים בקבוצה ואסורים בהחלט
 """
+
+
+def get_join_poll(user_name: str):
+    keyboard = [
+        [
+            InlineKeyboardButton(source.value, callback_data=source.value),
+        ]
+        for source in list(ReferralSource)
+    ]
+
+    return f"""{user_name} אנחנו שמחים שהצטרפת אלינו!
+נשמח לדעת, איך שמעת על הקבוצה?""", InlineKeyboardMarkup(
+        keyboard
+    )
 
 
 def increment_user_warnings_or_delete(

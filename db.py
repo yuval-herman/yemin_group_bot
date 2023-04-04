@@ -16,15 +16,27 @@ with sqlite3.connect("yemin_bot.db") as conn:
             user_id INTEGER NOT NULL,
             warnings INTEGER DEFAULT 1,
             last_warning_date INTEGER NOT NULL
-        )"""
+        )
+        """
     )
     c.execute(
         """
         CREATE TABLE IF NOT EXISTS censored_strings (
         id INTEGER PRIMARY KEY,
         string TEXT UNIQUE NOT NULL
-        );"""
+        );
+        """
     )
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS poll_answers (
+            id INTEGER PRIMARY KEY,
+            answer TEXT NOT NULL,
+            timestamp INTEGER NOT NULL
+        );
+        """
+    )
+
     conn.commit()
 
     # Insert a new censor_string into the table
@@ -52,6 +64,30 @@ with sqlite3.connect("yemin_bot.db") as conn:
     # Insert a new censor_string into the table
     def read_censor_strings() -> List[sqlite3.Row]:
         c.execute("SELECT * FROM censored_strings")
+        return c.fetchall()
+
+    # Insert a poll answer into the table
+    def add_poll_answer(answer: str):
+        c.execute(
+            "INSERT INTO poll_answers (answer, timestamp) VALUES (?, ?)",
+            (answer, int(time())),
+        )
+        conn.commit()
+
+    def read_poll_answers():
+        c.execute(
+            "SELECT * FROM poll_answers",
+        )
+        return c.fetchall()
+
+    def aggregate_poll_answers():
+        c.execute(
+            """
+            SELECT answer, COUNT(*) as count
+            FROM poll_answers
+            GROUP BY answer;
+            """,
+        )
         return c.fetchall()
 
     # Insert a new user into the table
