@@ -1,7 +1,7 @@
 from telegram import ChatJoinRequest, Update
 from telegram.ext import ContextTypes
 
-from botFunctions import ban_user, delete_message
+from botFunctions import ban_user, delete_message, is_admin
 from dataStructures import BotActions, InvalidActions
 from helpers import (
     add_runtime_censor_word,
@@ -71,6 +71,9 @@ async def censor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         or update.effective_user is None
         or update.message is None
     ):
+        return
+
+    if not await is_admin(update):
         return
     if context.args is None or len(context.args) == 0:
         await update.message.reply_text(

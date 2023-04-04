@@ -41,3 +41,18 @@ async def ban_user(update: Update, reason: InvalidActions):
         )
     except TelegramError as e:
         await update.effective_chat.send_message("כשל בזריקת משתמש: " + e.message)
+
+
+async def is_admin(update: Update):
+    if (
+        update.effective_chat is None
+        or update.message is None
+        or update.effective_user is None
+    ):
+        return False
+    chatMember = await update.effective_chat.get_member(update.effective_user.id)
+    if chatMember.status not in [chatMember.ADMINISTRATOR, chatMember.OWNER]:
+        await update.message.reply_text(
+            "פקודה זאת מיועדת למנהלים בלבד, אם נתקלת במילה שלדעתך צריך לחסום, צור קשר עם מנהלי הקבוצה והם יחסמו אותה."
+        )
+        return False
