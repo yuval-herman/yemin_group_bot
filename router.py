@@ -1,9 +1,10 @@
+import json
 from telegram import ChatJoinRequest, Update
 from telegram.ext import ContextTypes
 
 from botFunctions import ban_user, delete_message, is_admin
 from dataStructures import BotActions, ReferralSource
-from db import add_poll_answer
+from db import add_poll_answer, aggregate_poll_answers
 from helpers import (
     add_runtime_censor_word,
     get_group_rules,
@@ -50,7 +51,9 @@ async def great_new_members(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         await update.effective_chat.send_message(
             get_group_rules(request.from_user.full_name)
         )
-        pollText, replyMarkup = get_join_poll(request.from_user.full_name)
+        pollText, replyMarkup = get_join_poll(
+            request.from_user.full_name, request.from_user.id
+        )
         await update.effective_chat.send_message(pollText, reply_markup=replyMarkup)
     else:
         await request.decline()
@@ -124,6 +127,25 @@ async def uncensor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         remove_runtime_censor_word(context.args[0])
 
 
+async def poll_stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.message is None:
+        return
+    if not await is_admin(update):
+        return
+    pollAnswers = aggregate_poll_answers()
+
+    totalAnswersCount = sum([c["count"] for c in pollAnswers])
+    await update.message.reply_text(
+        f"עד כה {totalAnswersCount} אנשים הגיבו לשאלון\n"
+        + "\n".join(
+            [
+                f"{answer[0]} -> {(answer[1]/totalAnswersCount)*100}%, {answer[1]}"
+                for answer in pollAnswers
+            ]
+        )
+    )
+
+
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Parses the CallbackQuery and updates the message text."""
 
@@ -131,8 +153,15 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if query is None:
         return
 
-    await query.answer("תודה על ההיענות!")
-    if query.data is None or query.data not in (x.value for x in ReferralSource):
+    if query.data is None:
         return
-    add_poll_answer(query.data)
+    callbackData = json.loads(query.data)
+    if callbackData[0] not in (x.value for x in ReferralSource):
+        return
+    if callbackData[1] != query.from_user.id:
+        await query.answer("ההודעה מיודעת למשתמש אחר")
+        return
+
+    add_poll_answer(callbackData[0])
+    await query.answer("תודה על ההיענות!")
     await query.delete_message()

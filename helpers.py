@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from collections import defaultdict
+import json
 from typing import Union
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -112,10 +113,13 @@ def get_group_rules(user_name: str):
 """
 
 
-def get_join_poll(user_name: str):
+def get_join_poll(user_name: str, user_id: int):
     keyboard = [
         [
-            InlineKeyboardButton(source.value, callback_data=source.value),
+            InlineKeyboardButton(
+                source.value,
+                callback_data=json.dumps([source.value, user_id], ensure_ascii=False),
+            ),
         ]
         for source in list(ReferralSource)
     ]
