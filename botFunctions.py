@@ -45,10 +45,7 @@ async def ban_user(update: Update, reason: InvalidActions):
 
 async def is_admin(chat: Chat, user_id: int):
     chatMember = await chat.get_member(user_id)
-    if (
-        chatMember.status not in [chatMember.ADMINISTRATOR, chatMember.OWNER]
-        and user_id != 227093322  # my own id for debugging
-    ):
+    if chatMember.status not in [chatMember.ADMINISTRATOR, chatMember.OWNER]:
         return False
     return True
 
