@@ -3,15 +3,14 @@ import json
 from telegram import ChatJoinRequest, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import ContextTypes
 
-from botFunctions import ban_user, delete_message, is_admin, is_private_chat
+from botFunctions import ban_user, delete_message, is_admin
 from dataStructures import BotActions, ReferralSource
 from db import add_poll_answer, aggregate_poll_answers
-from decorators import restricted_admins
+from decorators import only_admins, only_private
 from helpers import (
     add_runtime_censor_word,
     get_group_rules,
     get_join_poll,
-    get_private_chat_only,
     get_runtime_banned_words,
     increment_user_warnings_or_delete,
     is_banned,
@@ -85,7 +84,7 @@ async def send_group_link(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     )
 
 
-@restricted_admins
+@only_admins
 async def censor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if (
         update.effective_chat is None
@@ -112,7 +111,7 @@ async def censor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         pass
 
 
-@restricted_admins
+@only_admins
 async def uncensor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if (
         update.effective_chat is None
@@ -145,11 +144,9 @@ async def uncensor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         remove_runtime_censor_word(context.args[0])
 
 
+@only_private
 async def poll_stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if update.message is None or update.effective_chat is None:
-        return
-    if not await is_private_chat(update.effective_chat):
-        await update.message.reply_text(get_private_chat_only())
+    if update.message is None:
         return
 
     pollAnswers = aggregate_poll_answers()
@@ -165,13 +162,11 @@ async def poll_stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     )
 
 
+@only_private
 async def get_censored_words(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
-    if update.effective_chat is None or update.message is None:
-        return
-    if not await is_private_chat(update.effective_chat):
-        await update.message.reply_text(get_private_chat_only())
+    if update.message is None:
         return
 
     await update.message.reply_text(
