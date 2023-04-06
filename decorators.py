@@ -1,6 +1,6 @@
 from functools import wraps
 from telegram.ext import ContextTypes
-from telegram import Update
+from telegram import ReplyKeyboardRemove, Update
 
 from botFunctions import is_admin, is_private_chat
 
@@ -33,3 +33,18 @@ def only_private(func):
         await update.message.reply_text("פקודה זה פועלת בצ'אט פרטי בלבד")
 
     return allow_private
+
+
+def removes_custom_keyboard(func):
+    @wraps(func)
+    async def remove_keyboard(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        if update.effective_chat is None:
+            return
+        await func(update, context)
+
+        message = await update.effective_chat.send_message(
+            "ignore this", reply_markup=ReplyKeyboardRemove()
+        )
+        await message.delete()
+
+    return remove_keyboard

@@ -6,7 +6,7 @@ from telegram.ext import ContextTypes
 from botFunctions import ban_user, delete_message, is_admin
 from dataStructures import BotActions, ReferralSource
 from db import add_poll_answer, aggregate_poll_answers
-from decorators import only_admins, only_private
+from decorators import only_admins, only_private, removes_custom_keyboard
 from helpers import (
     add_runtime_censor_word,
     get_group_rules,
@@ -74,6 +74,7 @@ async def great_new_members(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         )
 
 
+@removes_custom_keyboard
 async def send_group_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.effective_chat is None or update.effective_user is None:
         return
@@ -84,6 +85,7 @@ async def send_group_link(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     )
 
 
+@removes_custom_keyboard
 @only_admins
 async def censor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if (
@@ -144,6 +146,7 @@ async def uncensor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         remove_runtime_censor_word(context.args[0])
 
 
+@removes_custom_keyboard
 @only_private
 async def poll_stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None:
@@ -162,6 +165,7 @@ async def poll_stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     )
 
 
+@removes_custom_keyboard
 @only_private
 async def get_censored_words(
     update: Update, context: ContextTypes.DEFAULT_TYPE
