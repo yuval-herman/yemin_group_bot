@@ -1,21 +1,16 @@
 import json
-from telegram import (
-    ChatJoinRequest,
-    ChatMember,
-    Update,
-    ReplyKeyboardRemove,
-    ReplyKeyboardMarkup,
-)
+
+from telegram import ChatJoinRequest, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import ContextTypes
 
 from botFunctions import ban_user, delete_message, is_admin, is_private_chat
 from dataStructures import BotActions, ReferralSource
 from db import add_poll_answer, aggregate_poll_answers
+from decorators import restricted_admins
 from helpers import (
     add_runtime_censor_word,
     get_group_rules,
     get_join_poll,
-    get_only_admin_message,
     get_private_chat_only,
     get_runtime_banned_words,
     increment_user_warnings_or_delete,
@@ -90,6 +85,7 @@ async def send_group_link(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     )
 
 
+@restricted_admins
 async def censor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if (
         update.effective_chat is None
@@ -98,9 +94,6 @@ async def censor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     ):
         return
 
-    if not await is_admin(update.effective_chat, update.effective_user.id):
-        await update.message.reply_text(get_only_admin_message())
-        return
     if context.args is None or len(context.args) == 0:
         await update.message.reply_text(
             "שלח לי את הפקודה ואחריה את המילה שתרצה לחסום, לדוגמא\n/censor@yemin_group_bot חלול"
@@ -119,6 +112,7 @@ async def censor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         pass
 
 
+@restricted_admins
 async def uncensor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if (
         update.effective_chat is None
@@ -126,9 +120,7 @@ async def uncensor_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         or update.message is None
     ):
         return
-    if not await is_admin(update.effective_chat, update.effective_user.id):
-        await update.message.reply_text(get_only_admin_message())
-        return
+
     if context.args is None or len(context.args) == 0:
         keyboard = [
             [f"/uncensor@yemin_group_bot {word}"] for word in get_runtime_banned_words()
