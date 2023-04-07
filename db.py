@@ -14,8 +14,9 @@ with sqlite3.connect("yemin_bot.db") as conn:
        CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY,
             user_id INTEGER NOT NULL,
-            warnings INTEGER DEFAULT 1,
-            last_warning_date INTEGER NOT NULL
+            warnings INTEGER DEFAULT 0,
+            last_warning_date INTEGER,
+            is_privileged BOOLEAN
         )
         """
     )
@@ -93,7 +94,7 @@ with sqlite3.connect("yemin_bot.db") as conn:
     # Insert a new user into the table
     def create_user(user_id):
         c.execute(
-            "INSERT INTO users (user_id, last_warning_date) VALUES (?, ?)",
+            "INSERT INTO users (user_id) VALUES (?)",
             (user_id, int(time())),
         )
         conn.commit()

@@ -144,9 +144,13 @@ def increment_user_warnings_or_delete(
     if user is None:
         create_user(user_id)
         invalidTextInfo["warnings_amount"] = 1
+        update_warnings(user_id, invalidTextInfo["warnings_amount"])
         return invalidTextInfo
 
-    last_warning_date = datetime.fromtimestamp(user["last_warning_date"])
+    last_warning_date = datetime.now()
+    if user["last_warning_date"]:
+        last_warning_date = datetime.fromtimestamp(user["last_warning_date"])
+
     # if the last warning was more then half a year ago, ignore it
     if last_warning_date < datetime.now() - timedelta(days=182):
         invalidTextInfo["warnings_amount"] = 1

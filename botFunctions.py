@@ -3,6 +3,7 @@ from telegram.error import TelegramError
 from telegram import Chat, Update
 
 from dataStructures import InvalidActions
+from db import get_user
 
 
 async def delete_message(update: Update, reason: str):
@@ -46,6 +47,9 @@ async def ban_user(update: Update, reason: InvalidActions):
 async def is_admin(chat: Chat, user_id: int):
     chatMember = await chat.get_member(user_id)
     if chatMember.status not in [chatMember.ADMINISTRATOR, chatMember.OWNER]:
+        db_user = get_user(user_id)
+        if db_user and db_user["is_privileged"]:
+            return True
         return False
     return True
 
