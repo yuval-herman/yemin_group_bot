@@ -32,7 +32,7 @@ end
 
 function watch
     echo "Watching code..."
-    ls *.py | entr -rc python bot.py
+    ls *.py | entr -rc python bot.py dev
 end
 
 function fetch

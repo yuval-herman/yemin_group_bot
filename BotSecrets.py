@@ -4,6 +4,7 @@ from typing import TypedDict
 
 class Secrets(TypedDict):
     bot_token: str
+    test_bot_token: str
 
 
 with open("secrets.json", "r") as f:

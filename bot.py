@@ -18,10 +18,14 @@ from router import (
     send_group_link,
     uncensor_word,
 )
+from sys import argv
+
 
 secrets = get_secrets()
+is_dev_mode = len(argv) >= 2 and argv[1].lower() == "dev"
+token = secrets["test_bot_token"] if is_dev_mode else secrets["bot_token"]
 
-app = ApplicationBuilder().token(secrets["bot_token"]).build()
+app = ApplicationBuilder().token(secrets["test_bot_token"]).build()
 
 app.add_handler(ChatJoinRequestHandler(great_new_members))
 
@@ -38,5 +42,5 @@ app.add_handler(
 )
 app.add_handler(MessageHandler(filters.ChatType.PRIVATE, send_group_link))
 
-print("bot running!")
+print(f"bot running{' in dev mode' if is_dev_mode else '!'}")
 app.run_polling()
