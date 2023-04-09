@@ -19,7 +19,7 @@ from router import (
     uncensor_word,
 )
 from sys import argv
-
+import logging
 
 secrets = get_secrets()
 is_dev_mode = len(argv) >= 2 and argv[1].lower() == "dev"
@@ -27,6 +27,10 @@ token = secrets["test_bot_token"] if is_dev_mode else secrets["bot_token"]
 
 app = ApplicationBuilder().token(secrets["test_bot_token"]).build()
 
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.DEBUG if is_dev_mode else logging.INFO,
+)
 app.add_handler(ChatJoinRequestHandler(great_new_members))
 
 app.add_handler(CommandHandler("censor", censor_word))
@@ -42,5 +46,5 @@ app.add_handler(
 )
 app.add_handler(MessageHandler(filters.ChatType.PRIVATE, send_group_link))
 
-print(f"bot running{' in dev mode' if is_dev_mode else '!'}")
+
 app.run_polling()
