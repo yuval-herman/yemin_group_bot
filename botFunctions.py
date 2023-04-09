@@ -44,8 +44,14 @@ async def ban_user(update: Update, reason: InvalidActions):
         await update.effective_chat.send_message("כשל בזריקת משתמש: " + e.message)
 
 
-async def is_admin(chat: Chat, user_id: int):
-    chatMember = await chat.get_member(user_id)
+async def is_admin(update: Update):
+    if update.effective_chat is None or update.effective_user is None:
+        return False
+    user_id = update.effective_user.id
+    if update.message and update.message.sender_chat:
+        user_id = update.message.sender_chat.id
+
+    chatMember = await update.effective_chat.get_member(user_id)
     if chatMember.status not in [chatMember.ADMINISTRATOR, chatMember.OWNER]:
         db_user = get_user(user_id)
         if db_user and db_user["is_privileged"]:

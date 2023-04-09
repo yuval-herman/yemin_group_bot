@@ -27,9 +27,7 @@ async def filter_words(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     ):
         return
     for entity in update.message.entities:
-        if entity.type in [entity.TEXT_LINK, entity.URL] and not await is_admin(
-            update.effective_chat, update.effective_user.id
-        ):
+        if entity.type in [entity.TEXT_LINK, entity.URL] and not await is_admin(update):
             await update.message.delete()
             await update.effective_chat.send_message(
                 f"{update.effective_user.full_name} שים לב כי אסור לשלוח לינקים בקבוצה."

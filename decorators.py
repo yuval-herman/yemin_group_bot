@@ -15,7 +15,7 @@ def only_admins(func):
         ):
             return
 
-        if await is_admin(update.effective_chat, update.effective_user.id):
+        if await is_admin(update):
             return await func(update, context)
         await update.message.reply_text("פקודה זה מיועדת למנהלים בלבד")
 
