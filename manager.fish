@@ -41,7 +41,13 @@ function fetch
     echo "Download complete!"
 end
 
-set available_commands upload start stop restart watch fetch
+function replace_db
+    echo "Uploading remote.db"
+    scp -r remote.db $REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/yemin_bot.db
+    echo "Upload complete!"
+end
+
+set available_commands upload start stop restart watch fetch replace_db
 
 if contains $argv[1] $available_commands
     # If the command is in the array of available commands, run the corresponding function
