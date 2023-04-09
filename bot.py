@@ -25,7 +25,7 @@ secrets = get_secrets()
 is_dev_mode = len(argv) >= 2 and argv[1].lower() == "dev"
 token = secrets["test_bot_token"] if is_dev_mode else secrets["bot_token"]
 
-app = ApplicationBuilder().token(secrets["test_bot_token"]).build()
+app = ApplicationBuilder().token(token).build()
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
