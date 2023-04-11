@@ -1,7 +1,12 @@
+import logging
+from sys import argv
+
+from telegram import constants
 from telegram.ext import (
     ApplicationBuilder,
     CallbackQueryHandler,
     ChatJoinRequestHandler,
+    ChatMemberHandler,
     CommandHandler,
     MessageHandler,
     filters,
@@ -16,10 +21,9 @@ from router import (
     great_new_members,
     poll_stats,
     send_group_link,
+    new_chat_members,
     uncensor_word,
 )
-from sys import argv
-import logging
 
 secrets = get_secrets()
 is_dev_mode = len(argv) >= 2 and argv[1].lower() == "dev"
@@ -32,6 +36,8 @@ logging.basicConfig(
     level=logging.DEBUG if is_dev_mode else logging.INFO,
 )
 app.add_handler(ChatJoinRequestHandler(great_new_members))
+app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, new_chat_members))
+
 
 app.add_handler(CommandHandler("censor", censor_word))
 app.add_handler(CommandHandler("uncensor", uncensor_word))
@@ -44,7 +50,4 @@ app.add_handler(
         (filters.TEXT | filters.CAPTION) & filters.ChatType.GROUPS, filter_words
     )
 )
-app.add_handler(MessageHandler(filters.ChatType.PRIVATE, send_group_link))
-
-
 app.run_polling()

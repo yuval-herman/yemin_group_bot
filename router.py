@@ -1,6 +1,14 @@
 import json
+from typing import Union, cast
 
-from telegram import ChatJoinRequest, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
+from telegram import (
+    Chat,
+    ChatJoinRequest,
+    ReplyKeyboardMarkup,
+    ReplyKeyboardRemove,
+    Update,
+    User,
+)
 from telegram.ext import ContextTypes
 
 from botFunctions import ban_user, delete_message, is_admin
@@ -51,24 +59,41 @@ async def filter_words(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         )
 
 
-async def great_new_members(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if update.effective_user is None or update.effective_chat is None:
+async def new_chat_members(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if (
+        update.message is None
+        or update.message.new_chat_members is None
+        or update.effective_chat is None
+    ):
         return
-    request: ChatJoinRequest = update.chat_join_request  # type: ignore
-    info = is_valid_text(request.from_user.full_name + (request.bio or ""))
+    for user in update.message.new_chat_members:
+        await filter_new_members(user, update.effective_chat)
+
+
+async def great_new_members(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.chat_join_request is None or update.effective_chat is None:
+        return
+    await filter_new_members(update.chat_join_request, update.effective_chat)
+
+
+async def filter_new_members(request: Union[ChatJoinRequest, User], chat: Chat):
+    user = request if isinstance(request, User) else request.from_user
+    bio = request.bio or "" if isinstance(request, ChatJoinRequest) else ""
+
+    info = is_valid_text(user.full_name + bio)
     if not info["is_invalid"]:
-        await request.approve()
-        await update.effective_chat.send_message(
-            get_group_rules(request.from_user.full_name)
-        )
-        pollText, replyMarkup = get_join_poll(
-            request.from_user.full_name, request.from_user.id
-        )
-        await update.effective_chat.send_message(pollText, reply_markup=replyMarkup)
+        if isinstance(request, ChatJoinRequest):
+            await request.approve()
+        await chat.send_message(get_group_rules(user.full_name))
+        pollText, replyMarkup = get_join_poll(user.full_name, user.id)
+        await chat.send_message(pollText, reply_markup=replyMarkup)
     else:
-        await request.decline()
-        await update.effective_chat.send_message(
-            f"המשתמש {update.effective_user.full_name} נחסם מכניסה לקבוצה\n{info['msg']}"
+        if isinstance(request, ChatJoinRequest):
+            await request.decline()
+        else:
+            await chat.ban_member(user.id)
+        await chat.send_message(
+            f"המשתמש {user.full_name} נחסם מכניסה לקבוצה\n{info['msg']}"
         )
 
 
