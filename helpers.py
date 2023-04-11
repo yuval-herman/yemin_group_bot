@@ -129,7 +129,7 @@ def get_join_poll(user_name: str, user_id: int):
     ]
 
     return f"""{user_name} אנחנו שמחים שהצטרפת אלינו!
-נשמח לדעת, איך שמעת על הקבוצה?""", InlineKeyboardMarkup(
+כדי לשלוח הודעות בקבוצה, עליך לבחור איך הגעת לקבוצה, תודה רבה!""", InlineKeyboardMarkup(
         keyboard
     )
 

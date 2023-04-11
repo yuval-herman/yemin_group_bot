@@ -4,6 +4,7 @@ from typing import Union, cast
 from telegram import (
     Chat,
     ChatJoinRequest,
+    ChatPermissions,
     ReplyKeyboardMarkup,
     ReplyKeyboardRemove,
     Update,
@@ -84,6 +85,10 @@ async def filter_new_members(request: Union[ChatJoinRequest, User], chat: Chat):
     if not info["is_invalid"]:
         if isinstance(request, ChatJoinRequest):
             await request.approve()
+        await chat.restrict_member(
+            user.id,
+            ChatPermissions.no_permissions(),
+        )
         await chat.send_message(get_group_rules(user.full_name))
         pollText, replyMarkup = get_join_poll(user.full_name, user.id)
         await chat.send_message(pollText, reply_markup=replyMarkup)
@@ -220,3 +225,9 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     add_poll_answer(callbackData[0])
     await query.answer("תודה על ההיענות!")
     await query.delete_message()
+    if update.effective_chat is None or update.effective_user is None:
+        return
+    await update.effective_chat.restrict_member(
+        update.effective_user.id,
+        ChatPermissions.all_permissions(),
+    )
