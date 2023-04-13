@@ -92,10 +92,10 @@ with sqlite3.connect("yemin_bot.db") as conn:
         return c.fetchall()
 
     # Insert a new user into the table
-    def create_user(user_id):
+    def create_user(user_id: int):
         c.execute(
             "INSERT INTO users (user_id) VALUES (?)",
-            (user_id, int(time())),
+            (user_id,),
         )
         conn.commit()
 
