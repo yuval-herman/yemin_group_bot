@@ -35,7 +35,7 @@ async def filter_words(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         or update.effective_chat is None
     ):
         return
-    for entity in update.message.entities:
+    for entity in update.message.entities + update.message.caption_entities:
         if entity.type in [entity.TEXT_LINK, entity.URL] and not await is_admin(update):
             await update.message.delete()
             await update.effective_chat.send_message(
@@ -43,7 +43,7 @@ async def filter_words(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 + " אם ברצונך לפרסם לינק ששאר חברי הקבוצה צריכים לראות פנה למנהלי הקבוצה והם יפרסמו את הלינק בשמך"
             )
             break
-    text = update.message.text or update.message.caption or ""
+    text = " ".join([update.message.text or "", update.message.caption or ""])
 
     info = is_valid_text(text)
     if not info["is_invalid"]:
