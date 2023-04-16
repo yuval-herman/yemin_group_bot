@@ -1,5 +1,5 @@
 import json
-from typing import Union, cast
+from typing import Optional, Union
 
 from telegram import (
     Chat,
@@ -13,7 +13,7 @@ from telegram import (
 from telegram.ext import ContextTypes
 
 from botFunctions import ban_user, delete_message, is_admin
-from dataStructures import BotActions, ReferralSource
+from dataStructures import BotActions, ReferralSource, kick_messages
 from db import add_poll_answer, aggregate_poll_answers
 from decorators import only_admins, only_private, removes_custom_keyboard
 from helpers import (
@@ -53,7 +53,11 @@ async def filter_words(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     info = increment_user_warnings_or_delete(update.effective_user.id, info)
     if info["action"] == BotActions.ban:
-        await ban_user(update, info["invalid_action"])
+        await ban_user(
+            update.effective_chat,
+            update.effective_user,
+            kick_messages[info["invalid_action"]],
+        )
     else:
         await update.effective_chat.send_message(
             f"{update.effective_user.full_name} זאת האזהרה {'הראשונה' if info['warnings_amount']==1 else 'השנייה' } שלך, בפעם השלישית שתפר את חוקי הקבוצה תזרק מהקבוצה!"
@@ -67,8 +71,9 @@ async def new_chat_members(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         or update.effective_chat is None
     ):
         return
+
     for user in update.message.new_chat_members:
-        await filter_new_members(user, update.effective_chat)
+        await filter_new_members(user, update.effective_chat, update.message.from_user)
 
 
 async def great_new_members(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -77,7 +82,9 @@ async def great_new_members(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     await filter_new_members(update.chat_join_request, update.effective_chat)
 
 
-async def filter_new_members(request: Union[ChatJoinRequest, User], chat: Chat):
+async def filter_new_members(
+    request: Union[ChatJoinRequest, User], chat: Chat, from_user: Optional[User] = None
+):
     user = request if isinstance(request, User) else request.from_user
     bio = request.bio or "" if isinstance(request, ChatJoinRequest) else ""
 
@@ -93,13 +100,18 @@ async def filter_new_members(request: Union[ChatJoinRequest, User], chat: Chat):
         pollText, replyMarkup = get_join_poll(user.full_name, user.id)
         await chat.send_message(pollText, reply_markup=replyMarkup)
     else:
+        ban_message = f"עקב {info['msg']}"
         if isinstance(request, ChatJoinRequest):
             await request.decline()
+            await chat.send_message(ban_message)
         else:
-            await chat.ban_member(user.id)
-        await chat.send_message(
-            f"המשתמש {user.full_name} נחסם מכניסה לקבוצה\n{info['msg']}"
-        )
+            await ban_user(chat, user, ban_message)
+        if from_user and info["action"] == BotActions.ban:
+            await ban_user(
+                chat,
+                from_user,
+                f"עקב נסיון להכניס משתמש ערבי.",
+            )
 
 
 @removes_custom_keyboard

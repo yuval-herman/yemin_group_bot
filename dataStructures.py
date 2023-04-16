@@ -1,5 +1,5 @@
 from enum import Enum, auto, unique
-from typing import TypedDict
+from typing import Dict, TypedDict
 
 
 class BotActions(Enum):
@@ -31,3 +31,10 @@ class ReferralSource(Enum):
     other_group = "קבוצה אחרת"
     advertisement = "פרסום"
     other = "אחר"
+
+
+kick_messages: Dict[InvalidActions, str] = {
+    InvalidActions.none: "",
+    InvalidActions.swear: "לאחר שקילל והוזהר בפעם השלישית",
+    InvalidActions.arabic: "לאחר שרשם בערבית",
+}
