@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from collections import defaultdict
 import json
+import os
 from typing import Union
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -34,16 +35,21 @@ def load_word_dict():
     wordsDict = defaultdict[str, Union[str, None]](lambda: None)
     baseWord = ""
     nextIsBaseWord = True
-    with open("data/nouns.txt", "r") as f:
-        for line in f.readlines():
-            if line == "-------\n":
-                nextIsBaseWord = True
-                continue
-            word = line.split(" ")[0]
-            if nextIsBaseWord:
-                baseWord = word
-                nextIsBaseWord = False
-            wordsDict[word] = baseWord
+    for file in os.scandir("./data"):
+        if not file.is_file():
+            continue
+        with open(file, "r") as f:
+            for line in f.readlines():
+                if line.startswith("#"):
+                    continue
+                if line.startswith("--"):
+                    nextIsBaseWord = True
+                    continue
+                word = line.split(" ")[0]
+                if nextIsBaseWord:
+                    baseWord = word
+                    nextIsBaseWord = False
+                wordsDict[word] = baseWord
     return wordsDict
 
 
@@ -90,8 +96,7 @@ def stem(word: str):
         if word.startswith(prefix):
             stemmed = words_dict[word[len(prefix) :]]
         if stemmed is not None:
-            break
-    return stemmed
+            return stemmed
 
 
 def is_valid_text(text: str) -> InvalidTextInfo:
@@ -187,7 +192,7 @@ def increment_user_warnings_or_delete(
 
 words_dict = load_word_dict()
 
-for string in ("זונה", "השרמוטה", "זין"):
+for string in ("זונה", "השרמוטה", "זין", "מזדיין", "גייז", "קוקסינל", "מתחנגל"):
     add_censor_string(stem(string) or string)
 
 banned_words = {x[1] for x in read_censor_strings()}
