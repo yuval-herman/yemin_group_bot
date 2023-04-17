@@ -47,19 +47,12 @@ def load_word_dict():
     return wordsDict
 
 
-words_dict = load_word_dict()
-
-for string in ("זונה", "שרמוטה", "זין"):
-    add_censor_string(string)
-
-banned_words = {x[1] for x in read_censor_strings()}
-
-
 def get_runtime_banned_words():
     return banned_words
 
 
 def add_runtime_censor_word(word: str):
+    word = stem(word) or word
     add_censor_string(word)
     banned_words.add(word)
 
@@ -71,7 +64,34 @@ def remove_runtime_censor_word(word: str):
 
 
 def is_banned(word: str) -> bool:
-    return (words_dict[word] or word) in banned_words
+    return (stem(word) or word) in banned_words
+
+
+prefixes = [
+    "",
+    "ו",
+    "ה",
+    "ש",
+    "כש",
+    "מש",
+    "לכש",
+    "ב",
+    "כ",
+    "ל",
+    "מ",
+    "מה",
+    "שכש",
+]
+
+
+def stem(word: str):
+    stemmed = word
+    for prefix in prefixes:
+        if word.startswith(prefix):
+            stemmed = words_dict[word[len(prefix) :]]
+        if stemmed is not None:
+            break
+    return stemmed
 
 
 def is_valid_text(text: str) -> InvalidTextInfo:
@@ -163,3 +183,11 @@ def increment_user_warnings_or_delete(
         return invalidTextInfo
     update_warnings(user_id, invalidTextInfo["warnings_amount"])
     return invalidTextInfo
+
+
+words_dict = load_word_dict()
+
+for string in ("זונה", "השרמוטה", "זין"):
+    add_censor_string(stem(string) or string)
+
+banned_words = {x[1] for x in read_censor_strings()}
